@@ -25,16 +25,23 @@ public class OOTPBruteForce {
 			
 	public OOTPBruteForce() {
 
-		System.out.println("Welcome to the Advanced (sorta) OOTP Brute Force Calculator!");
-		System.out.println("Credit to Matthew Hendrickson (Programmer) and Ben Mayhew (Moral support and statistics)");
+		System.out.println("Welcome to the OOTP Brute Force Calculator!");
+		System.out.println("Credit to Matthew Hendrickson (Programmer) and Benjamin Mayhew (Statistics)");
 		System.out.println("Scanning files...\n");
 		
-		InputStream isObs = this.getClass().getResourceAsStream("/data/observed_test1.csv");
+		try{
+			InputStream isObs = this.getClass().getResourceAsStream("/data/observed.csv");
+			InputStream isCal = this.getClass().getResourceAsStream("/data/calculated.csv");
+			observedSheet = new ObservedSheet(isObs);
+			calculatedSheet = new CalculatedSheet(isCal);
+		}catch(Exception e) {
+			System.err.println("Error! Files not found! Make sure they are named 'observed.csv' and calculated.csv'!");
+			System.exit(0);
+			
+		}
 		
-		InputStream isCal = this.getClass().getResourceAsStream("/data/calculated_test1.csv");
 		
-		observedSheet = new ObservedSheet(isObs);
-		calculatedSheet = new CalculatedSheet(isCal);
+	
 		
 		//observedSheet = new ObservedSheet(observed_Files[0]);
 		//calculatedSheet = new CalculatedSheet(calculated_Files[0]);

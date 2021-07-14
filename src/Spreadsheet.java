@@ -29,7 +29,6 @@ public abstract class Spreadsheet{
 				sheetData.add(data);
 				//System.out.println(data);
 			}
-			System.out.println("\n\n\n");
 			lineCount = sheetData.size();
 			//System.out.println(lineCount);
 			initializeData();
