@@ -1,30 +1,32 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CalculatedSheet extends Spreadsheet{
 	private int[] stuffArr, movementArr, controlArr;
 	private Player[] playerArr;
+
 	
-	public CalculatedSheet(File spreadSheet) {
+	public CalculatedSheet(InputStream spreadSheet) {
 		super(spreadSheet);
 	}
 	
 	
 	@Override
 	public void initializeData() {
-		String headings = sheetScanner.nextLine(); //Can be disregarded or used as a check to make sure all the data is handled correctly
+
 		stuffArr = new int[(int) (lineCount)];
 		movementArr = new int[(int) (lineCount)];
 		controlArr = new int[(int) (lineCount)];
 		nameArr = new String[(int) (lineCount)];
 		playerArr = new Player[(int) (lineCount)];
-		
+
 		Scanner lineScanner;
 		//Put all the data and prioritize them accordingly
 		for(int i = 0; i < lineCount; i++) {
-			if(sheetScanner.hasNextLine()) {
-				String line = sheetScanner.nextLine();
+				String line = sheetData.get(i);
 				lineScanner = new Scanner(line).useDelimiter(",");
 				
 				int count = 0;
@@ -51,7 +53,7 @@ public class CalculatedSheet extends Spreadsheet{
 			}
 		}
 		
-	}
+	
 	
 	@Override
 	public void pruneData(ArrayList<Integer> calculatedPositions) {

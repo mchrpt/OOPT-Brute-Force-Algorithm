@@ -1,5 +1,9 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -7,18 +11,26 @@ import java.util.Scanner;
 
 public abstract class Spreadsheet{
 	
-	private File sheetCSV;
-	protected Scanner sheetScanner;
+	private InputStream sheetCSV;
+	private Scanner sheetScanner;
 	protected long lineCount;
 	protected String[] nameArr;
-	
-	public Spreadsheet(File spreadSheet) {
+	protected ArrayList<String> sheetData;
+	public Spreadsheet(InputStream spreadSheet) {
 		sheetCSV = spreadSheet;
 		
 		try {
-			sheetScanner = new Scanner(sheetCSV);
-			sheetScanner.useDelimiter(",");
-			lineCount = Files.lines(Paths.get(spreadSheet.getAbsolutePath())).count();
+			sheetScanner = new Scanner(new BufferedReader(new InputStreamReader(sheetCSV)));
+			
+			String data;
+			sheetData = new ArrayList<String>();
+			sheetScanner.nextLine();
+			while(sheetScanner.hasNextLine() && (data = sheetScanner.nextLine()) != null) {
+				sheetData.add(data);
+				//System.out.println(data);
+			}
+			System.out.println("\n\n\n");
+			lineCount = sheetData.size();
 			//System.out.println(lineCount);
 			initializeData();
 		} catch (Exception e) {

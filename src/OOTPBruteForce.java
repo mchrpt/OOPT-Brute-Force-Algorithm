@@ -1,4 +1,11 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -17,26 +24,24 @@ public class OOTPBruteForce {
 	private Player[][] sortedPlayerDoubleArr;
 			
 	public OOTPBruteForce() {
-		
+
 		System.out.println("Welcome to the Advanced (sorta) OOTP Brute Force Calculator!");
 		System.out.println("Credit to Matthew Hendrickson (Programmer) and Ben Mayhew (Moral support and statistics)");
 		System.out.println("Scanning files...\n");
-
-		//TODO: Find all the files and smash them into one CSV 
-		File calculated_Folder = new File("data/calculated");
-		File[] calculated_Files = calculated_Folder.listFiles();
-		System.out.println("Found " + calculated_Files.length + " file(s) in data/calculated\n");
 		
-		File observed_Folder = new File("data/observed");
-		File[] observed_Files = observed_Folder.listFiles();
-		System.out.println("Found " + observed_Files.length + " file(s) in data/observed\n");
+		InputStream isObs = this.getClass().getResourceAsStream("/data/observed_test1.csv");
 		
-		observedSheet = new ObservedSheet(observed_Files[0]);
-		calculatedSheet = new CalculatedSheet(calculated_Files[0]);
+		InputStream isCal = this.getClass().getResourceAsStream("/data/calculated_test1.csv");
+		
+		observedSheet = new ObservedSheet(isObs);
+		calculatedSheet = new CalculatedSheet(isCal);
+		
+		//observedSheet = new ObservedSheet(observed_Files[0]);
+		//calculatedSheet = new CalculatedSheet(calculated_Files[0]);
 		
 		System.out.println("Ratings compiled and loaded successfully!\n");
 		
-		System.out.println("Crossreferencing names between sheets, " + (observedSheet.getSheetSize() - 1) + " in observed sheet and " + (calculatedSheet.getSheetSize() - 1) + " in calculated sheet");
+		System.out.println("Crossreferencing names between sheets, " + (observedSheet.getSheetSize()) + " in observed sheet and " + (calculatedSheet.getSheetSize()) + " in calculated sheet");
 		
 		//We find which positions the players we need are at 
 		calculatedPositions = new ArrayList<Integer>();
@@ -62,6 +67,9 @@ public class OOTPBruteForce {
 			}
 			
 		}
+		
+		
+		
 		System.out.println(calculatedPositions.size() + " players will be calculated into their respective positions and " + observedRemovePositions.size() + " player(s) will be disregarded...\n");
 		
 		calculatedSheet.pruneData(calculatedPositions);
@@ -125,6 +133,7 @@ public class OOTPBruteForce {
 				}
 			}
 		}
+	
 		System.out.println("\n\n" + sortedPlayerDoubleArr.length + " Arrays with " + sortedPlayerDoubleArr[0].length + " players per array");
 		int maxPointsOverall = Integer.MAX_VALUE;
 		double stuffAmount = 0, movementAmount = 0, controlAmount = 0;
@@ -206,5 +215,23 @@ public class OOTPBruteForce {
 		OOTPBruteForce start = new OOTPBruteForce();
 
 	}
+	
+	
+	//
+	private String GetExecutionPath(){
+		try {
+		String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+		
+	    absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf("/"));
+	    absolutePath = absolutePath.replaceAll("%20"," "); // Surely need to do this here
+	    return absolutePath;
+	    
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "penis bitch";
+	}
+	
 
 }

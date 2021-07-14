@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.stream.BaseStream;
@@ -7,24 +9,23 @@ import java.util.stream.IntStream;
 //We are assuming the first column is the names
 public class ObservedSheet extends Spreadsheet {
 
-	public ObservedSheet(File spreadSheet) {
-		super(spreadSheet);
+	public ObservedSheet(InputStream isObs) {
+		super(isObs);
 	}
 
 	@Override
 	public void initializeData() {
-		String headings = sheetScanner.nextLine(); // Can be disregarded or used as a check to make sure all the data is
+		 // Can be disregarded or used as a check to make sure all the data is
 													// handled correctly
 		nameArr = new String[(int) (lineCount)];
 
 		// Put all the data and prioritize them accordingly
 		for (int i = 0; i < lineCount; i++) {
-			if (sheetScanner.hasNextLine()) {
-				nameArr[i] = sheetScanner.nextLine();
+				nameArr[i] = sheetData.get(i);
 				// System.out.println(i + " " + nameArr[i]);
 			}
 		}
-	}
+	
 
 	@Override
 	public void pruneData(ArrayList<Integer> observedRemovePositions) {
@@ -51,11 +52,8 @@ public class ObservedSheet extends Spreadsheet {
 			}
 			
 		}
-		for(int i = 0; i < newNameArr.length - 1; i++) {
-			//System.out.println(i + " " + newNameArr[i]);
-		}
 		nameArr = newNameArr;
-		System.out.println("Observed sheet successfully pruned with " + (nameArr.length - 1) + " players remaining");
+		System.out.println("Observed sheet successfully pruned with " + (nameArr.length) + " players remaining");
 
 	}
 }
