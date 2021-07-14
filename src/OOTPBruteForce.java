@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class OOTPBruteForce {
@@ -13,7 +14,7 @@ public class OOTPBruteForce {
 	
 	private ArrayList<Integer> calculatedPositions;
 	private ArrayList<Integer> observedRemovePositions;
-	
+			
 	public OOTPBruteForce() {
 		
 		System.out.println("Welcome to the Advanced (sorta) OOTP Brute Force Calculator!");
@@ -89,6 +90,9 @@ public class OOTPBruteForce {
 			for(double currMovementAmt = minMovementAmt; currMovementAmt < maxMovementAmt - movementStepAmt; currMovementAmt += movementStepAmt) {
 				for(double currControlAmt = minControlAmt; currControlAmt < maxControlAmt - controlStepAmt; currControlAmt += controlStepAmt) {
 					iterations++;
+					Arrays.sort(calculatedSheet.getPlayerArr(), new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
+					calculatedSheet.printArr();
+					System.out.println(iterations);
 				}
 			}
 		}
