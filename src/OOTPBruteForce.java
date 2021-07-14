@@ -2,7 +2,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
-
 public class OOTPBruteForce {
 
 	private double minStuffAmt, minMovementAmt, minControlAmt; //The lower bound
@@ -14,6 +13,8 @@ public class OOTPBruteForce {
 	
 	private ArrayList<Integer> calculatedPositions;
 	private ArrayList<Integer> observedRemovePositions;
+	
+	private CalculatedSheet.Player[][] sortedPlayerDoubleArr;
 			
 	public OOTPBruteForce() {
 		
@@ -66,6 +67,7 @@ public class OOTPBruteForce {
 		calculatedSheet.pruneData(calculatedPositions);
 		observedSheet.pruneData(observedRemovePositions);
 		
+		//Enter boundaries
 		Scanner keyboard = new Scanner(System.in);
 		System.out.println("\nEnter the lower, upper, and step amount for Stuff");
 		minStuffAmt = keyboard.nextDouble();
@@ -85,18 +87,92 @@ public class OOTPBruteForce {
 		controlStepAmt = keyboard.nextDouble();
 		System.out.println("min Control = " + minControlAmt + " max Control = " + maxControlAmt + " Control Step Amt = " + controlStepAmt);
 		
+		int totalIterations = (int)((maxStuffAmt / stuffStepAmt) * (maxMovementAmt / movementStepAmt) * (maxControlAmt / controlStepAmt) + 1);
+		sortedPlayerDoubleArr = new CalculatedSheet.Player[totalIterations][];
+		
+		//Run the calculations and place all the data into a double array
+		//We then use the saved data to brute force every possible combination to get our closest fit
 		int iterations = 0;
-		for(double currStuffAmt = minStuffAmt; currStuffAmt < maxStuffAmt - stuffStepAmt; currStuffAmt += stuffStepAmt) {
-			for(double currMovementAmt = minMovementAmt; currMovementAmt < maxMovementAmt - movementStepAmt; currMovementAmt += movementStepAmt) {
-				for(double currControlAmt = minControlAmt; currControlAmt < maxControlAmt - controlStepAmt; currControlAmt += controlStepAmt) {
+		for(double currStuffAmt = minStuffAmt; currStuffAmt <= maxStuffAmt; currStuffAmt += stuffStepAmt) {
+			for(double currMovementAmt = minMovementAmt; currMovementAmt <= maxMovementAmt; currMovementAmt += movementStepAmt) {
+				for(double currControlAmt = minControlAmt; currControlAmt <= maxControlAmt; currControlAmt += controlStepAmt) {
+					CalculatedSheet.Player[] sortedArr = calculatedSheet.getPlayerArr().clone();
+					
+					for(CalculatedSheet.Player player : sortedArr) {
+						player.stuffMultiplier = currStuffAmt;
+						player.movementMultiplier = currMovementAmt;
+						player.controlMultiplier = currControlAmt;
+					}
+					
+					Arrays.sort(sortedArr, new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
+					sortedPlayerDoubleArr[iterations] = sortedArr;
+					//System.out.println(iterations + " " + currStuffAmt + " " + currMovementAmt + " " + currControlAmt);
 					iterations++;
-					Arrays.sort(calculatedSheet.getPlayerArr(), new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
-					calculatedSheet.printArr();
-					System.out.println(iterations + " " + currStuffAmt + " " + currMovementAmt + " " + currControlAmt);
 				}
 			}
 		}
-		System.out.println(iterations);
+		System.out.println(sortedPlayerDoubleArr.length + " " + sortedPlayerDoubleArr[0].length);
+		int maxPointsOverall = Integer.MAX_VALUE;
+		double stuffAmount = 0, movementAmount = 0, controlAmount = 0;
+		CalculatedSheet.Player[] finalPlayerArr = null;
+		for(CalculatedSheet.Player[] playerArr : sortedPlayerDoubleArr) {
+			if(playerArr != null) {
+				int totalPointsForArr = 0;
+				for(int i = 0; i < playerArr.length; i++) {
+					String nameObserved = observedSheet.getNameArr()[i];
+					String nameCalculated = playerArr[i].name; 
+					if(!nameCalculated.equals(nameObserved)) {
+						int posOfObservedName = 0;
+					
+							for(int j = 0; j < observedSheet.getNameArr().length; j++) {
+								if(nameCalculated.equals(nameObserved)) {
+									posOfObservedName = j;
+								}
+							
+							
+						}
+						if(posOfObservedName == 0) {
+							System.err.println("Error! Name not found in the list! You really fucked it up Matt");
+						}
+						//i = the pos of the calculated name
+						totalPointsForArr += Math.abs(i-posOfObservedName);
+					}
+				}
+				
+				if(totalPointsForArr < maxPointsOverall) {
+					maxPointsOverall = totalPointsForArr;
+					stuffAmount = playerArr[0].stuffMultiplier;
+					movementAmount = playerArr[0].movementMultiplier;
+					controlAmount = playerArr[0].controlMultiplier;
+					finalPlayerArr = playerArr;
+				}
+				
+				
+			}
+			
+		}
+		printArr(finalPlayerArr);
+		System.out.println(maxPointsOverall + " total matches, highest had stuff = " + stuffAmount + " movement = " + movementAmount + " control = " + controlAmount);
+		
+		
+		
+	}
+	public void printDoubleArr() {
+		for(CalculatedSheet.Player[] playerArr : sortedPlayerDoubleArr) {
+			if(playerArr != null) {
+				for(CalculatedSheet.Player player : playerArr) {
+					System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control);
+				
+				}
+			}
+			System.out.println("\n\n\n\n");
+		}
+		
+	}
+	public void printArr(CalculatedSheet.Player[] playerArr) {
+		for(CalculatedSheet.Player player : playerArr) {
+			System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control);
+		}
 	}
 	
 	public static void main(String[] args) {
