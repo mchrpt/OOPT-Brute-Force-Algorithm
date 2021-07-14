@@ -92,7 +92,7 @@ public class OOTPBruteForce {
 					iterations++;
 					Arrays.sort(calculatedSheet.getPlayerArr(), new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
 					calculatedSheet.printArr();
-					System.out.println(iterations);
+					System.out.println(iterations + " " + currStuffAmt + " " + currMovementAmt + " " + currControlAmt);
 				}
 			}
 		}
