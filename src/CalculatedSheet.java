@@ -66,11 +66,7 @@ public class CalculatedSheet extends Spreadsheet{
 		System.out.println("Calculated sheet successfully pruned with " + playerArr.length + " players remaining");
 	}
 	
-	public class Player{
-		public int stuff, movement, control;
-		public double stuffMultiplier, movementMultiplier, controlMultiplier;
-		public String name = "";
-	}
+	
 	public Player[] getPlayerArr() {
 		return playerArr;
 	}

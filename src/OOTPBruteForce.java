@@ -14,7 +14,7 @@ public class OOTPBruteForce {
 	private ArrayList<Integer> calculatedPositions;
 	private ArrayList<Integer> observedRemovePositions;
 	
-	private CalculatedSheet.Player[][] sortedPlayerDoubleArr;
+	private Player[][] sortedPlayerDoubleArr;
 			
 	public OOTPBruteForce() {
 		
@@ -87,8 +87,8 @@ public class OOTPBruteForce {
 		controlStepAmt = keyboard.nextDouble();
 		System.out.println("min Control = " + minControlAmt + " max Control = " + maxControlAmt + " Control Step Amt = " + controlStepAmt);
 		
-		int totalIterations = (int)((maxStuffAmt / stuffStepAmt) * (maxMovementAmt / movementStepAmt) * (maxControlAmt / controlStepAmt) + 1);
-		sortedPlayerDoubleArr = new CalculatedSheet.Player[totalIterations][];
+		int totalIterations = (int)((maxStuffAmt / stuffStepAmt) * (maxMovementAmt / movementStepAmt) * (maxControlAmt / controlStepAmt));
+		sortedPlayerDoubleArr = new Player[totalIterations][];
 		
 		//Run the calculations and place all the data into a double array
 		//We then use the saved data to brute force every possible combination to get our closest fit
@@ -96,13 +96,27 @@ public class OOTPBruteForce {
 		for(double currStuffAmt = minStuffAmt; currStuffAmt <= maxStuffAmt; currStuffAmt += stuffStepAmt) {
 			for(double currMovementAmt = minMovementAmt; currMovementAmt <= maxMovementAmt; currMovementAmt += movementStepAmt) {
 				for(double currControlAmt = minControlAmt; currControlAmt <= maxControlAmt; currControlAmt += controlStepAmt) {
-					CalculatedSheet.Player[] sortedArr = calculatedSheet.getPlayerArr().clone();
 					
-					for(CalculatedSheet.Player player : sortedArr) {
-						player.stuffMultiplier = currStuffAmt;
-						player.movementMultiplier = currMovementAmt;
-						player.controlMultiplier = currControlAmt;
+					Player[] sortedArr = new Player[calculatedSheet.getPlayerArr().length];
+					
+					for(int i = 0; i < calculatedSheet.getPlayerArr().length; i++) {
+						Player oldPlayer = calculatedSheet.getPlayerArr()[i];
+						
+						if(oldPlayer == null) {
+							System.out.println("null player in position " + i);
+						}
+						
+						Player newPlayer = new Player();
+						newPlayer.stuff = oldPlayer.stuff;
+						newPlayer.movement = oldPlayer.movement;
+						newPlayer.control = oldPlayer.control;
+						newPlayer.stuffMultiplier = currStuffAmt;
+						newPlayer.movementMultiplier = currMovementAmt;
+						newPlayer.controlMultiplier = currControlAmt;
+						newPlayer.name = oldPlayer.name;
+						sortedArr[i] = newPlayer;
 					}
+
 					
 					Arrays.sort(sortedArr, new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
 					sortedPlayerDoubleArr[iterations] = sortedArr;
@@ -111,40 +125,50 @@ public class OOTPBruteForce {
 				}
 			}
 		}
-		System.out.println(sortedPlayerDoubleArr.length + " " + sortedPlayerDoubleArr[0].length);
+		System.out.println("\n\n" + sortedPlayerDoubleArr.length + " Arrays with " + sortedPlayerDoubleArr[0].length + " players per array");
 		int maxPointsOverall = Integer.MAX_VALUE;
 		double stuffAmount = 0, movementAmount = 0, controlAmount = 0;
-		CalculatedSheet.Player[] finalPlayerArr = null;
-		for(CalculatedSheet.Player[] playerArr : sortedPlayerDoubleArr) {
+		Player[] finalPlayerArr = null;
+		for(Player[] playerArr : sortedPlayerDoubleArr) {
+			
 			if(playerArr != null) {
 				int totalPointsForArr = 0;
 				for(int i = 0; i < playerArr.length; i++) {
+					if(playerArr[i] != null) {
+						
+					
 					String nameObserved = observedSheet.getNameArr()[i];
 					String nameCalculated = playerArr[i].name; 
-					if(!nameCalculated.equals(nameObserved)) {
+					if(!nameCalculated.equals(nameObserved) && nameCalculated != null && nameObserved != null) {
 						int posOfObservedName = 0;
 					
 							for(int j = 0; j < observedSheet.getNameArr().length; j++) {
-								if(nameCalculated.equals(nameObserved)) {
+								if(nameCalculated.equals(observedSheet.getNameArr()[j])) {
 									posOfObservedName = j;
 								}
 							
 							
 						}
-						if(posOfObservedName == 0) {
-							System.err.println("Error! Name not found in the list! You really fucked it up Matt");
+					if(posOfObservedName == 0) {
+							//System.err.println("Error! Name not found in the list! " + nameCalculated);
+						}else {
+							totalPointsForArr += Math.abs(i-posOfObservedName);//i = the pos of the calculated name
+							
 						}
-						//i = the pos of the calculated name
-						totalPointsForArr += Math.abs(i-posOfObservedName);
+						
+						
+						}
 					}
 				}
 				
-				if(totalPointsForArr < maxPointsOverall) {
+				if(totalPointsForArr < maxPointsOverall && playerArr != null && playerArr[0] != null) {
 					maxPointsOverall = totalPointsForArr;
+					finalPlayerArr = playerArr;
 					stuffAmount = playerArr[0].stuffMultiplier;
 					movementAmount = playerArr[0].movementMultiplier;
 					controlAmount = playerArr[0].controlMultiplier;
-					finalPlayerArr = playerArr;
+					
+					
 				}
 				
 				
@@ -152,15 +176,15 @@ public class OOTPBruteForce {
 			
 		}
 		printArr(finalPlayerArr);
-		System.out.println(maxPointsOverall + " total matches, highest had stuff = " + stuffAmount + " movement = " + movementAmount + " control = " + controlAmount);
+		System.out.println((double)((double)maxPointsOverall/(double)sortedPlayerDoubleArr[0].length) + "% total variance, highest had stuff = " + stuffAmount + " movement = " + movementAmount + " control = " + controlAmount);
 		
 		
 		
 	}
 	public void printDoubleArr() {
-		for(CalculatedSheet.Player[] playerArr : sortedPlayerDoubleArr) {
+		for(Player[] playerArr : sortedPlayerDoubleArr) {
 			if(playerArr != null) {
-				for(CalculatedSheet.Player player : playerArr) {
+				for(Player player : playerArr) {
 					System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control);
 				
 				}
@@ -169,10 +193,12 @@ public class OOTPBruteForce {
 		}
 		
 	}
-	public void printArr(CalculatedSheet.Player[] playerArr) {
-		for(CalculatedSheet.Player player : playerArr) {
-			System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control);
+	public void printArr(Player[] playerArr) {
+		System.out.println("\n\nName, Stuff, Movement, Control, ------ Weighted Stuff, Weighted Movement, Weighted Control");
+		for(Player player : playerArr) {
+			System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control + " ------ " + player.stuffMultiplier * player.stuff + ", " + player.movementMultiplier * player.movement + ", " + player.controlMultiplier * player.control + " = " + ((player.stuffMultiplier * player.stuff) + (player.movementMultiplier * player.movement) + (player.controlMultiplier * player.control)));
 		}
+		System.out.println("\n\n");
 	}
 	
 	public static void main(String[] args) {
