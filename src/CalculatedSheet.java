@@ -76,7 +76,7 @@ public class CalculatedSheet extends Spreadsheet{
 	
 	public void printArr() {
 		for(Player player : playerArr) {
-			System.out.println(player.name + " " + player.stuff + " " + player.movement + " " + player.control);
+			System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control);
 		}
 	}
 }

@@ -14,7 +14,7 @@ public class PlayerSort implements Comparator<CalculatedSheet.Player>{
 	public int compare(CalculatedSheet.Player p1, CalculatedSheet.Player p2) {
 		double p1Stats = (p1.stuff * stuffMultiplier) + (p1.movement * movementMultiplier) + (p1.control * controlMultiplier);
 		double p2Stats = (p2.stuff * stuffMultiplier) + (p2.movement * movementMultiplier) + (p2.control * controlMultiplier);
-		return (int)(p1Stats - p2Stats);
+		return (int)(p2Stats - p1Stats);
 	}
 
 }
