@@ -29,6 +29,30 @@ public class OOTPBruteForce {
 		System.out.println("Credit to Matthew Hendrickson (Programmer) and Benjamin Mayhew (Statistics)");
 		System.out.println("Scanning files...\n");
 		
+		loadFiles();
+		
+		System.out.println("Ratings compiled and loaded successfully!\n");
+		
+		System.out.println("Crossreferencing names between sheets, " + (observedSheet.getSheetSize()) + " in observed sheet and " + (calculatedSheet.getSheetSize()) + " in calculated sheet");
+		
+		crossReference();
+		
+		inputBoundaries();
+		
+		System.out.println(calculatedPositions.size() + " players will be calculated into their respective positions and " + observedRemovePositions.size() + " player(s) will be disregarded...\n");
+		
+		calculatedSheet.pruneData(calculatedPositions);
+		observedSheet.pruneData(observedRemovePositions);
+		
+		System.out.println("\n\n\nRunning brute force, please wait...");
+		
+		createDoubleArr();
+		
+		runDoubleArrCalculations();
+
+	}
+	
+	public void loadFiles() {
 		try{
 			InputStream isObs = this.getClass().getResourceAsStream("/data/observed.csv");
 			InputStream isCal = this.getClass().getResourceAsStream("/data/calculated.csv");
@@ -39,69 +63,57 @@ public class OOTPBruteForce {
 			System.exit(0);
 			
 		}
-		
-		
+	}
 	
-		
-		//observedSheet = new ObservedSheet(observed_Files[0]);
-		//calculatedSheet = new CalculatedSheet(calculated_Files[0]);
-		
-		System.out.println("Ratings compiled and loaded successfully!\n");
-		
-		System.out.println("Crossreferencing names between sheets, " + (observedSheet.getSheetSize()) + " in observed sheet and " + (calculatedSheet.getSheetSize()) + " in calculated sheet");
-		
+	public void crossReference() {
 		//We find which positions the players we need are at 
-		calculatedPositions = new ArrayList<Integer>();
-		observedRemovePositions = new ArrayList<Integer>();
-		
-		//Compare everything in the observed sheet to the calculated sheet, print any extraneous cases
-		for(int i = 0; i < observedSheet.getSheetSize(); i++) {
-			String nameObserved = observedSheet.getNameArr()[i];
-			boolean isNameFound = false;
-			
-			for(int j = 0; j < calculatedSheet.getSheetSize(); j++) {
-				String nameCalculated = calculatedSheet.getNameArr()[j];
-				if(nameCalculated != null && nameObserved != null && !nameObserved.equals(null) && !nameCalculated.equals(null)) {
-					if(nameCalculated.equals(nameObserved)) {
-						isNameFound = true;
-						calculatedPositions.add(j);
-					}
-				}
-			}
-			if(!isNameFound && nameObserved != null) {
-				System.err.println("Player: " + nameObserved + " in observed file was not found and will be disregarded in the calculation");
-				observedRemovePositions.add(i);
-			}
-			
-		}
-		
-		
-		
-		System.out.println(calculatedPositions.size() + " players will be calculated into their respective positions and " + observedRemovePositions.size() + " player(s) will be disregarded...\n");
-		
-		calculatedSheet.pruneData(calculatedPositions);
-		observedSheet.pruneData(observedRemovePositions);
-		
-		//Enter boundaries
-		Scanner keyboard = new Scanner(System.in);
-		System.out.println("\nEnter the lower, upper, and step amount for Stuff");
-		minStuffAmt = keyboard.nextDouble();
-		maxStuffAmt = keyboard.nextDouble();
-		stuffStepAmt = keyboard.nextDouble();
-		System.out.println("min Stuff = " + minStuffAmt + " max Stuff = " + maxStuffAmt + " stuff Step Amt = " + stuffStepAmt);
+				calculatedPositions = new ArrayList<Integer>();
+				observedRemovePositions = new ArrayList<Integer>();
 				
-		System.out.println("\nEnter the lower, upper, and step amount for Movement");
-		minMovementAmt = keyboard.nextDouble();
-		maxMovementAmt = keyboard.nextDouble();
-		movementStepAmt = keyboard.nextDouble();
-		System.out.println("min Movement = " + minMovementAmt + " max Movement = " + maxMovementAmt + " Movement Step Amt = " + movementStepAmt);
-		
-		System.out.println("\nEnter the lower, upper, and step amount for Control");
-		minControlAmt = keyboard.nextDouble();
-		maxControlAmt = keyboard.nextDouble();
-		controlStepAmt = keyboard.nextDouble();
-		System.out.println("min Control = " + minControlAmt + " max Control = " + maxControlAmt + " Control Step Amt = " + controlStepAmt);
-		
+				//Compare everything in the observed sheet to the calculated sheet, print any extraneous cases
+				for(int i = 0; i < observedSheet.getSheetSize(); i++) {
+					String nameObserved = observedSheet.getNameArr()[i];
+					boolean isNameFound = false;
+					
+					for(int j = 0; j < calculatedSheet.getSheetSize(); j++) {
+						String nameCalculated = calculatedSheet.getNameArr()[j];
+						if(nameCalculated != null && nameObserved != null && !nameObserved.equals(null) && !nameCalculated.equals(null)) {
+							if(nameCalculated.equals(nameObserved)) {
+								isNameFound = true;
+								calculatedPositions.add(j);
+							}
+						}
+					}
+					if(!isNameFound && nameObserved != null) {
+						System.err.println("Player: " + nameObserved + " in observed file was not found and will be disregarded in the calculation");
+						observedRemovePositions.add(i);
+					}
+					
+				}
+	}
+	public void inputBoundaries(){
+		//Enter boundaries
+				Scanner keyboard = new Scanner(System.in);
+				System.out.println("\nEnter the lower, upper, and step amount for Stuff");
+				minStuffAmt = keyboard.nextDouble();
+				maxStuffAmt = keyboard.nextDouble();
+				stuffStepAmt = keyboard.nextDouble();
+				System.out.println("min Stuff = " + minStuffAmt + " max Stuff = " + maxStuffAmt + " stuff Step Amt = " + stuffStepAmt);
+						
+				System.out.println("\nEnter the lower, upper, and step amount for Movement");
+				minMovementAmt = keyboard.nextDouble();
+				maxMovementAmt = keyboard.nextDouble();
+				movementStepAmt = keyboard.nextDouble();
+				System.out.println("min Movement = " + minMovementAmt + " max Movement = " + maxMovementAmt + " Movement Step Amt = " + movementStepAmt);
+				
+				System.out.println("\nEnter the lower, upper, and step amount for Control");
+				minControlAmt = keyboard.nextDouble();
+				maxControlAmt = keyboard.nextDouble();
+				controlStepAmt = keyboard.nextDouble();
+				System.out.println("min Control = " + minControlAmt + " max Control = " + maxControlAmt + " Control Step Amt = " + controlStepAmt);
+				
+	}
+	public void createDoubleArr() {
 		int totalIterations = (int)((maxStuffAmt / stuffStepAmt) * (maxMovementAmt / movementStepAmt) * (maxControlAmt / controlStepAmt));
 		sortedPlayerDoubleArr = new Player[totalIterations][];
 		
@@ -135,12 +147,18 @@ public class OOTPBruteForce {
 					
 					Arrays.sort(sortedArr, new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
 					sortedPlayerDoubleArr[iterations] = sortedArr;
-					//System.out.println(iterations + " " + currStuffAmt + " " + currMovementAmt + " " + currControlAmt);
+					
+					if(iterations % (totalIterations / 1000) == 0) {
+						System.out.println(iterations + " " + currStuffAmt + " " + currMovementAmt + " " + currControlAmt);
+					}
+					
+					
 					iterations++;
 				}
 			}
 		}
-	
+	}
+	public void runDoubleArrCalculations() {
 		System.out.println("\n\n" + sortedPlayerDoubleArr.length + " Arrays with " + sortedPlayerDoubleArr[0].length + " players per array");
 		int maxPointsOverall = Integer.MAX_VALUE;
 		double stuffAmount = 0, movementAmount = 0, controlAmount = 0;
@@ -192,9 +210,7 @@ public class OOTPBruteForce {
 			
 		}
 		printArr(finalPlayerArr);
-		System.out.println((double)((double)maxPointsOverall/(double)sortedPlayerDoubleArr[0].length) + "% total variance, highest had stuff = " + stuffAmount + " movement = " + movementAmount + " control = " + controlAmount);
-		
-		
+		System.out.println(maxPointsOverall + " total variance, highest had stuff = " + stuffAmount + " movement = " + movementAmount + " control = " + controlAmount);
 		
 	}
 	public void printDoubleArr() {
@@ -222,23 +238,5 @@ public class OOTPBruteForce {
 		OOTPBruteForce start = new OOTPBruteForce();
 
 	}
-	
-	
-	//
-	private String GetExecutionPath(){
-		try {
-		String absolutePath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-		
-	    absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf("/"));
-	    absolutePath = absolutePath.replaceAll("%20"," "); // Surely need to do this here
-	    return absolutePath;
-	    
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return "penis bitch";
-	}
-	
 
 }
