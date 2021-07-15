@@ -6,18 +6,19 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 public class OOTPBruteForce {
 
-	private double minStuffAmt, minMovementAmt, minControlAmt; //The lower bound
-	private double maxStuffAmt, maxMovementAmt, maxControlAmt; //The upper bound
+	private double minStuffAmt, minMovementAmt, minControlAmt, minStuffAmtRight, minMovementAmtRight, minControlAmtRight; //The lower bound
+	private double maxStuffAmt, maxMovementAmt, maxControlAmt, maxStuffAmtRight, maxMovementAmtRight, maxControlAmtRight; //The upper bound
 	private double stuffStepAmt, movementStepAmt, controlStepAmt; //How much we step forward by each scan
 
 	private ObservedSheet observedSheet;
 	private CalculatedSheet calculatedSheet;
-	
+	private static final DecimalFormat df = new DecimalFormat(".#####");
 	private ArrayList<Integer> calculatedPositions;
 	private ArrayList<Integer> observedRemovePositions;
 	
@@ -48,7 +49,7 @@ public class OOTPBruteForce {
 		
 		createDoubleArr();
 		
-		runDoubleArrCalculations();
+		//runDoubleArrCalculations();
 
 	}
 	
@@ -116,7 +117,9 @@ public class OOTPBruteForce {
 	public void createDoubleArr() {
 		int totalIterations = (int)((maxStuffAmt / stuffStepAmt) * (maxMovementAmt / movementStepAmt) * (maxControlAmt / controlStepAmt));
 		sortedPlayerDoubleArr = new Player[totalIterations][];
-		
+		int varianceAmount = Integer.MAX_VALUE;
+		double stuffAmount = 0, movementAmount = 0, controlAmount = 0;
+		Player[] playerArr = new Player[0];
 		//Run the calculations and place all the data into a double array
 		//We then use the saved data to brute force every possible combination to get our closest fit
 		int iterations = 0;
@@ -146,17 +149,32 @@ public class OOTPBruteForce {
 
 					
 					Arrays.sort(sortedArr, new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
-					sortedPlayerDoubleArr[iterations] = sortedArr;
 					
-					if(iterations % (totalIterations / 1000) == 0) {
-						System.out.println(iterations + " " + currStuffAmt + " " + currMovementAmt + " " + currControlAmt);
+					int currVarianceAmt = runCalculations(sortedArr);
+					if(currVarianceAmt < varianceAmount) {
+						varianceAmount = currVarianceAmt;
+						playerArr = sortedArr;
 					}
 					
+					//sortedPlayerDoubleArr[iterations] = sortedArr;
+					int divideAmount = (totalIterations / 1000);
+					if(divideAmount == 0) {divideAmount++;}
+					
+					if(iterations % divideAmount == 0) {
+						System.out.println("Iteration " + iterations + "/" + totalIterations + " [" + df.format(((double)((double)iterations/(double)totalIterations) * 100)) + "%] Stuff: " + df.format(currStuffAmt) + " Movement:" + df.format(currMovementAmt) + " Control:" + df.format(currControlAmt));
+					}
 					
 					iterations++;
 				}
 			}
 		}
+		
+		stuffAmount = playerArr[0].stuffMultiplier;
+		movementAmount = playerArr[0].movementMultiplier;
+		controlAmount = playerArr[0].controlMultiplier;
+		
+		printArr(playerArr);
+		System.out.println(varianceAmount + " total variance, lowest had stuff = " + df.format(stuffAmount) + " movement = " + df.format(movementAmount) + " control = " + df.format(controlAmount));
 	}
 	public void runDoubleArrCalculations() {
 		System.out.println("\n\n" + sortedPlayerDoubleArr.length + " Arrays with " + sortedPlayerDoubleArr[0].length + " players per array");
@@ -213,11 +231,44 @@ public class OOTPBruteForce {
 		System.out.println(maxPointsOverall + " total variance, highest had stuff = " + stuffAmount + " movement = " + movementAmount + " control = " + controlAmount);
 		
 	}
+	public int runCalculations(Player[] playerArr) {
+		int totalPointsForArr = -1;
+		if(playerArr != null) {
+			for(int i = 0; i < playerArr.length; i++) {
+				if(playerArr[i] != null) {
+					
+				
+				String nameObserved = observedSheet.getNameArr()[i];
+				String nameCalculated = playerArr[i].name; 
+				if(!nameCalculated.equals(nameObserved) && nameCalculated != null && nameObserved != null) {
+					int posOfObservedName = 0;
+				
+						for(int j = 0; j < observedSheet.getNameArr().length; j++) {
+							if(nameCalculated.equals(observedSheet.getNameArr()[j])) {
+								posOfObservedName = j;
+							}
+						
+						
+					}
+					if(posOfObservedName == 0) {
+						//System.err.println("Error! Name not found in the list! " + nameCalculated);
+					}else {
+						if(totalPointsForArr == -1) { totalPointsForArr++;}
+						totalPointsForArr += Math.abs(i-posOfObservedName);//i = the pos of the calculated name
+					}
+					
+					
+					}
+				}
+			}
+		}
+		return totalPointsForArr;
+	}
 	public void printDoubleArr() {
 		for(Player[] playerArr : sortedPlayerDoubleArr) {
 			if(playerArr != null) {
 				for(Player player : playerArr) {
-					System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control);
+					System.out.println(player.name + ", " + df.format(player.stuff) + ", " + df.format(player.movement) + ", " + df.format(player.control));
 				
 				}
 			}
@@ -226,11 +277,14 @@ public class OOTPBruteForce {
 		
 	}
 	public void printArr(Player[] playerArr) {
-		System.out.println("\n\nName, Stuff, Movement, Control, ------ Weighted Stuff, Weighted Movement, Weighted Control");
+		System.out.println("\n\nName ------- Weighted Value");
+		
 		for(Player player : playerArr) {
-			System.out.println(player.name + ", " + player.stuff + ", " + player.movement + ", " + player.control + " ------ " + player.stuffMultiplier * player.stuff + ", " + player.movementMultiplier * player.movement + ", " + player.controlMultiplier * player.control + " = " + ((player.stuffMultiplier * player.stuff) + (player.movementMultiplier * player.movement) + (player.controlMultiplier * player.control)));
+			System.out.println(player.name + " ------- " + df.format(((player.stuffMultiplier * player.stuff) + (player.movementMultiplier * player.movement) + (player.controlMultiplier * player.control))));
 		}
+		
 		System.out.println("\n\n");
+		
 	}
 	
 	public static void main(String[] args) {
