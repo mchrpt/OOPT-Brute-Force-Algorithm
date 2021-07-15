@@ -1,10 +1,5 @@
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.stream.BaseStream;
-import java.util.stream.IntStream;
 
 //We are assuming the first column is the names
 public class ObservedSheet extends Spreadsheet {
@@ -25,12 +20,12 @@ public class ObservedSheet extends Spreadsheet {
 				// System.out.println(i + " " + nameArr[i]);
 			}
 		}
-	
+
 
 	@Override
 	public void pruneData(ArrayList<Integer> observedRemovePositions) {
 		String[] newNameArr = new String[(int) (lineCount - observedRemovePositions.size())];
-		
+
 		int count = 0;
 		int totalRemovedPositions = 0;
 		for(int i = 0; i < nameArr.length; i++) {
@@ -43,14 +38,14 @@ public class ObservedSheet extends Spreadsheet {
 					totalRemovedPositions++;
 				}
 			}
-			
+
 			if(foundPrunablePosition) {
 				observedRemovePositions.remove((Object)positionToPrune);
 			}else {
 				newNameArr[count] = nameArr[i];
 				count++;
 			}
-			
+
 		}
 		nameArr = newNameArr;
 		System.out.println("Observed sheet successfully pruned with " + (nameArr.length) + " players remaining");
