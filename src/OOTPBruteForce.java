@@ -55,8 +55,8 @@ public class OOTPBruteForce {
 
 	public void loadFiles() {
 		try {
-			InputStream isObs = this.getClass().getResourceAsStream("/data/observed.csv");
-			InputStream isCal = this.getClass().getResourceAsStream("/data/calculated.csv");
+			InputStream isObs = this.getClass().getResourceAsStream("data/observed.csv");
+			InputStream isCal = this.getClass().getResourceAsStream("data/calculated.csv");
 			observedSheet = new ObservedSheet(isObs);
 			calculatedSheet = new CalculatedSheet(isCal);
 		} catch (Exception e) {
@@ -99,25 +99,25 @@ public class OOTPBruteForce {
 	public void inputBoundaries() {
 		// Enter boundaries
 		Scanner keyboard = new Scanner(System.in);
-		System.out.println("\nEnter the lower, upper, and step amount for Stuff");
+		System.out.println("\nEnter the lower, upper, and step amount for Stuff VL");
 		minStuffAmt = keyboard.nextDouble();
 		maxStuffAmt = keyboard.nextDouble();
 		stuffStepAmt = keyboard.nextDouble();
 		System.out.println(
-				"min Stuff = " + minStuffAmt + " max Stuff = " + maxStuffAmt + " stuff Step Amt = " + stuffStepAmt);
+				"min Stuff VL= " + minStuffAmt + " max Stuff VL= " + maxStuffAmt + " stuff Step Amt VL= " + stuffStepAmt);
 
 		System.out.println("\nEnter the lower, upper, and step amount for Movement");
 		minMovementAmt = keyboard.nextDouble();
 		maxMovementAmt = keyboard.nextDouble();
 		movementStepAmt = keyboard.nextDouble();
-		System.out.println("min Movement = " + minMovementAmt + " max Movement = " + maxMovementAmt
-				+ " Movement Step Amt = " + movementStepAmt);
+		System.out.println("min Movement VL= " + minMovementAmt + " max Movement VL= " + maxMovementAmt
+				+ " Movement Step Amt VL= " + movementStepAmt);
 
-		System.out.println("\nEnter the lower, upper, and step amount for Control");
+		System.out.println("\nEnter the lower, upper, and step amount for Control VL");
 		minControlAmt = keyboard.nextDouble();
 		maxControlAmt = keyboard.nextDouble();
 		controlStepAmt = keyboard.nextDouble();
-		System.out.println("min Control = " + minControlAmt + " max Control = " + maxControlAmt + " Control Step Amt = "
+		System.out.println("min Control VL= " + minControlAmt + " max Control VL= " + maxControlAmt + " Control Step Amt VL= "
 				+ controlStepAmt);
 		
 		System.out.println("\nEnter the lower, upper, and step amount for Stuff Right");
@@ -125,28 +125,34 @@ public class OOTPBruteForce {
 		maxStuffAmtRight = keyboard.nextDouble();
 		stuffStepAmtRight = keyboard.nextDouble();
 		System.out.println(
-				"min Stuff Right = " + minStuffAmtRight + " max Stuff Right = " + maxStuffAmtRight + " stuff Step Amt Right = " + stuffStepAmtRight);
+				"min Stuff VR = " + minStuffAmtRight + " max Stuff VR = " + maxStuffAmtRight + " stuff Step Amt VR = " + stuffStepAmtRight);
 
-		System.out.println("\nEnter the lower, upper, and step amount for Movement Right");
+		System.out.println("\nEnter the lower, upper, and step amount for Movement VR");
 		minMovementAmtRight = keyboard.nextDouble();
 		maxMovementAmtRight = keyboard.nextDouble();
 		movementStepAmtRight = keyboard.nextDouble();
-		System.out.println("min Movement Right= " + minMovementAmtRight + " max Movement Right = " + maxMovementAmtRight
-				+ " Movement Step Amt Right = " + movementStepAmtRight);
+		System.out.println("min Movement VR= " + minMovementAmtRight + " max Movement VR = " + maxMovementAmtRight
+				+ " Movement Step Amt VR = " + movementStepAmtRight);
 
-		System.out.println("\nEnter the lower, upper, and step amount for Control Right");
+		System.out.println("\nEnter the lower, upper, and step amount for Control VR");
 		minControlAmtRight = keyboard.nextDouble();
 		maxControlAmtRight = keyboard.nextDouble();
 		controlStepAmtRight = keyboard.nextDouble();
-		System.out.println("min Control Right = " + minControlAmtRight + " max Control Right = " + maxControlAmtRight + " Control Step Amt Right = "
+		System.out.println("min Control VR = " + minControlAmtRight + " max Control VR = " + maxControlAmtRight + " Control Step Amt VR = "
 				+ controlStepAmtRight);
 
 	}
 
 	public void createDoubleArr() {
-		int totalIterations = (int) ((maxStuffAmt / stuffStepAmt) * (maxMovementAmt / movementStepAmt)
-				* (maxControlAmt / controlStepAmt));
-		sortedPlayerDoubleArr = new Player[totalIterations][];
+		long totalIterations = (long) 
+				(((maxStuffAmt - minStuffAmt) / stuffStepAmt) 
+				* ((maxMovementAmt - minMovementAmt) / movementStepAmt)
+				* ((maxControlAmt - minControlAmt) / controlStepAmt) 
+				* ((maxStuffAmtRight - minStuffAmtRight) / stuffStepAmtRight) 
+				* ((maxMovementAmtRight - minMovementAmtRight) / movementStepAmtRight)
+				* ((maxControlAmtRight - minControlAmtRight) / controlStepAmtRight));
+
+		//sortedPlayerDoubleArr = new Player[totalIterations][];
 		int varianceAmount = Integer.MAX_VALUE;
 		double stuffAmount = 0, movementAmount = 0, controlAmount = 0, stuffAmountRight = 0, movementAmountRight = 0, controlAmountRight = 0;
 		Player[] playerArr = new Player[0];
@@ -188,25 +194,26 @@ public class OOTPBruteForce {
 									sortedArr[i] = newPlayer;
 								}
 
-								Arrays.sort(sortedArr, new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt));
+								Arrays.sort(sortedArr, new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt, currStuffAmtRight, currMovementAmtRight, currControlAmtRight));
 
 								int currVarianceAmt = runCalculations(sortedArr);
-								if (currVarianceAmt < varianceAmount) {
-									varianceAmount = currVarianceAmt;
-									playerArr = sortedArr;
-								}
+								
 
 								// sortedPlayerDoubleArr[iterations] = sortedArr;
-								int divideAmount = (totalIterations / 1000);
+								long divideAmount = (totalIterations / 1000);
 								if (divideAmount == 0) {
 									divideAmount++;
 								}
 
-								if (iterations % divideAmount == 0) {
-									System.out.println("Iteration " + iterations + "/" + totalIterations + " ["
-											+ df.format(((double) iterations / (double) totalIterations * 100))
-											+ "%] Stuff: " + df.format(currStuffAmt) + " Movement:"
-											+ df.format(currMovementAmt) + " Control:" + df.format(currControlAmt));
+								if (iterations % divideAmount == 0 || currVarianceAmt < varianceAmount ) {
+									System.out.println("Iteration " + iterations + " Variance " + currVarianceAmt + " Stuff VL:" + df.format(currStuffAmt) + " Movement VL:"
+											+ df.format(currMovementAmt) + " Control VL:" + df.format(currControlAmt) + " Stuff VR:" + df.format(currStuffAmtRight) + " Movement VR:"
+													+ df.format(currMovementAmtRight) + " Control VR:" + df.format(currControlAmtRight));
+								}
+								
+								if (currVarianceAmt < varianceAmount) {
+									varianceAmount = currVarianceAmt;
+									playerArr = sortedArr;
 								}
 
 								iterations++;
@@ -227,18 +234,17 @@ public class OOTPBruteForce {
 		
 		printArr(playerArr);
 		System.out.println(varianceAmount + " total variance, lowest had stuff = " + df.format(stuffAmount)
-				+ " movement = " + df.format(movementAmount) + " control = " + df.format(controlAmount)+ " stuff right = " + df.format(stuffAmount)
-				+ " movement right = " + df.format(movementAmount) + " control right = " + df.format(controlAmount));
+				+ " movement = " + df.format(movementAmount) + " control = " + df.format(controlAmount)+ " stuff right = " + df.format(stuffAmountRight)
+				+ " movement right = " + df.format(movementAmountRight) + " control right = " + df.format(controlAmountRight));
 	}
 
 	public void runDoubleArrCalculations() {
 		System.out.println("\n\n" + sortedPlayerDoubleArr.length + " Arrays with " + sortedPlayerDoubleArr[0].length
 				+ " players per array");
 		int maxPointsOverall = Integer.MAX_VALUE;
-		double stuffAmount = 0, movementAmount = 0, controlAmount = 0;
+		double stuffAmount = 0, movementAmount = 0, controlAmount = 0, stuffAmountRight = 0, movementAmountRight = 0, controlAmountRight = 0;
 		Player[] finalPlayerArr = null;
 		for (Player[] playerArr : sortedPlayerDoubleArr) {
-
 			if (playerArr != null) {
 				int totalPointsForArr = 0;
 				for (int i = 0; i < playerArr.length; i++) {
@@ -337,7 +343,8 @@ public class OOTPBruteForce {
 
 		for (Player player : playerArr) {
 			System.out.println(player.name + " ------- " + df.format(((player.stuffMultiplier * player.stuff)
-					+ (player.movementMultiplier * player.movement) + (player.controlMultiplier * player.control))));
+					+ (player.movementMultiplier * player.movement) + (player.controlMultiplier * player.control) + (player.stuffMultiplierRight * player.stuffRight)
+					+ (player.movementMultiplierRight * player.movementRight) + (player.controlMultiplierRight * player.controlRight))));
 		}
 
 		System.out.println("\n\n");
