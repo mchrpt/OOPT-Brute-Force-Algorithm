@@ -6,6 +6,10 @@ import java.util.Scanner;
 
 public class OOTPBruteForce {
 
+	private int numberOfRecursions = 0;
+	private int totalThreadAmt = 1;
+	private int maxNumberOfRecursions;
+
 	private double minStuffAmt, minMovementAmt, minControlAmt, minStuffAmtRight, minMovementAmtRight,
 			minControlAmtRight; // The lower bound
 	private double maxStuffAmt, maxMovementAmt, maxControlAmt, maxStuffAmtRight, maxMovementAmtRight,
@@ -13,13 +17,13 @@ public class OOTPBruteForce {
 	private double stuffStepAmt, movementStepAmt, controlStepAmt, stuffStepAmtRight, movementStepAmtRight,
 			controlStepAmtRight; // How much we step forward by each scan
 
+	private BruteForceThread[] threadArr;
+
 	private ObservedSheet observedSheet;
 	private CalculatedSheet calculatedSheet;
 	private static final DecimalFormat df = new DecimalFormat(".#####");
 	private ArrayList<Integer> calculatedPositions;
 	private ArrayList<Integer> observedRemovePositions;
-
-	private Player[][] sortedPlayerDoubleArr;
 
 	public OOTPBruteForce() {
 
@@ -47,9 +51,7 @@ public class OOTPBruteForce {
 
 		System.out.println("\n\n\nRunning brute force, please wait...");
 
-		createDoubleArr();
-
-		// runDoubleArrCalculations();
+		createAndExecuteThreads();
 
 	}
 
@@ -99,200 +101,194 @@ public class OOTPBruteForce {
 	public void inputBoundaries() {
 		// Enter boundaries
 		Scanner keyboard = new Scanner(System.in);
-		System.out.println("\nEnter the lower, upper, and step amount for Stuff VL");
-		minStuffAmt = keyboard.nextDouble();
-		maxStuffAmt = keyboard.nextDouble();
-		stuffStepAmt = keyboard.nextDouble();
 		System.out.println(
-				"min Stuff VL= " + minStuffAmt + " max Stuff VL= " + maxStuffAmt + " stuff Step Amt VL= " + stuffStepAmt);
+				"Enter 1 to enter all the values or 2 to auto enter 1, 10, 1 with 12 threads");
+		int firstEnterValue = keyboard.nextInt();
+		if (firstEnterValue == 1) {
+			System.out.println("\nEnter the number of threads (must be at least 4)");
+			totalThreadAmt = keyboard.nextInt();
 
-		System.out.println("\nEnter the lower, upper, and step amount for Movement");
-		minMovementAmt = keyboard.nextDouble();
-		maxMovementAmt = keyboard.nextDouble();
-		movementStepAmt = keyboard.nextDouble();
-		System.out.println("min Movement VL= " + minMovementAmt + " max Movement VL= " + maxMovementAmt
-				+ " Movement Step Amt VL= " + movementStepAmt);
+			System.out.println("\nEnter the lower, upper, and step amount for Stuff VL");
+			minStuffAmt = keyboard.nextDouble();
+			maxStuffAmt = keyboard.nextDouble();
+			stuffStepAmt = keyboard.nextDouble();
+			System.out.println("min Stuff VL= " + minStuffAmt + " max Stuff VL= " + maxStuffAmt + " stuff Step Amt VL= "
+					+ stuffStepAmt);
 
-		System.out.println("\nEnter the lower, upper, and step amount for Control VL");
-		minControlAmt = keyboard.nextDouble();
-		maxControlAmt = keyboard.nextDouble();
-		controlStepAmt = keyboard.nextDouble();
-		System.out.println("min Control VL= " + minControlAmt + " max Control VL= " + maxControlAmt + " Control Step Amt VL= "
-				+ controlStepAmt);
-		
-		System.out.println("\nEnter the lower, upper, and step amount for Stuff Right");
-		minStuffAmtRight = keyboard.nextDouble();
-		maxStuffAmtRight = keyboard.nextDouble();
-		stuffStepAmtRight = keyboard.nextDouble();
-		System.out.println(
-				"min Stuff VR = " + minStuffAmtRight + " max Stuff VR = " + maxStuffAmtRight + " stuff Step Amt VR = " + stuffStepAmtRight);
+			System.out.println("\nEnter the lower, upper, and step amount for Movement");
+			minMovementAmt = keyboard.nextDouble();
+			maxMovementAmt = keyboard.nextDouble();
+			movementStepAmt = keyboard.nextDouble();
+			System.out.println("min Movement VL= " + minMovementAmt + " max Movement VL= " + maxMovementAmt
+					+ " Movement Step Amt VL= " + movementStepAmt);
 
-		System.out.println("\nEnter the lower, upper, and step amount for Movement VR");
-		minMovementAmtRight = keyboard.nextDouble();
-		maxMovementAmtRight = keyboard.nextDouble();
-		movementStepAmtRight = keyboard.nextDouble();
-		System.out.println("min Movement VR= " + minMovementAmtRight + " max Movement VR = " + maxMovementAmtRight
-				+ " Movement Step Amt VR = " + movementStepAmtRight);
+			System.out.println("\nEnter the lower, upper, and step amount for Control VL");
+			minControlAmt = keyboard.nextDouble();
+			maxControlAmt = keyboard.nextDouble();
+			controlStepAmt = keyboard.nextDouble();
+			System.out.println("min Control VL= " + minControlAmt + " max Control VL= " + maxControlAmt
+					+ " Control Step Amt VL= " + controlStepAmt);
 
-		System.out.println("\nEnter the lower, upper, and step amount for Control VR");
-		minControlAmtRight = keyboard.nextDouble();
-		maxControlAmtRight = keyboard.nextDouble();
-		controlStepAmtRight = keyboard.nextDouble();
-		System.out.println("min Control VR = " + minControlAmtRight + " max Control VR = " + maxControlAmtRight + " Control Step Amt VR = "
-				+ controlStepAmtRight);
+			System.out.println("\nEnter the lower, upper, and step amount for Stuff Right");
+			minStuffAmtRight = keyboard.nextDouble();
+			maxStuffAmtRight = keyboard.nextDouble();
+			stuffStepAmtRight = keyboard.nextDouble();
+			System.out.println("min Stuff VR = " + minStuffAmtRight + " max Stuff VR = " + maxStuffAmtRight
+					+ " stuff Step Amt VR = " + stuffStepAmtRight);
+
+			System.out.println("\nEnter the lower, upper, and step amount for Movement VR");
+			minMovementAmtRight = keyboard.nextDouble();
+			maxMovementAmtRight = keyboard.nextDouble();
+			movementStepAmtRight = keyboard.nextDouble();
+			System.out.println("min Movement VR= " + minMovementAmtRight + " max Movement VR = " + maxMovementAmtRight
+					+ " Movement Step Amt VR = " + movementStepAmtRight);
+
+			System.out.println("\nEnter the lower, upper, and step amount for Control VR");
+			minControlAmtRight = keyboard.nextDouble();
+			maxControlAmtRight = keyboard.nextDouble();
+			controlStepAmtRight = keyboard.nextDouble();
+			System.out.println("min Control VR = " + minControlAmtRight + " max Control VR = " + maxControlAmtRight
+					+ " Control Step Amt VR = " + controlStepAmtRight);
+
+		} else if (firstEnterValue == 2) {
+
+			maxNumberOfRecursions = 3;
+			totalThreadAmt = 12;
+
+			minStuffAmt = 1;
+			maxStuffAmt = 10;
+
+			minMovementAmt = 1;
+			maxMovementAmt = 10;
+
+			minControlAmt = 1;
+			maxControlAmt = 10;
+
+			minStuffAmtRight = 1;
+			maxStuffAmtRight = 10;
+
+			minMovementAmtRight = 1;
+			maxMovementAmtRight = 10;
+
+			minControlAmtRight = 1;
+			maxControlAmtRight = 10;
+
+			stuffStepAmt = 1;
+			movementStepAmt = 1;
+			controlStepAmt = 1;
+
+			stuffStepAmtRight = 1;
+			movementStepAmtRight = 1;
+			controlStepAmtRight = 1;
+
+		} else {
+			for (int i = 0; i < 100; i++) {
+				System.out.println("How dare you enter the wrong number");
+			}
+			System.out.println("Bitch baseball fuckin sucks anyway badminton is better go eat some crayons");
+			System.exit(0);
+		}
 
 	}
 
-	public void createDoubleArr() {
-		long totalIterations = (long) 
-				(((maxStuffAmt - minStuffAmt) / stuffStepAmt) 
-				* ((maxMovementAmt - minMovementAmt) / movementStepAmt)
-				* ((maxControlAmt - minControlAmt) / controlStepAmt) 
-				* ((maxStuffAmtRight - minStuffAmtRight) / stuffStepAmtRight) 
-				* ((maxMovementAmtRight - minMovementAmtRight) / movementStepAmtRight)
-				* ((maxControlAmtRight - minControlAmtRight) / controlStepAmtRight));
+	public void createAndExecuteThreads() {
 
-		//sortedPlayerDoubleArr = new Player[totalIterations][];
+		// We need to count how many iterations to get a percentage of when it will
+		// finish
+		// Arrays start at zero
+		threadArr = new BruteForceThread[totalThreadAmt];
+
+		// Start running our threads
+		for (int i = 0; i < totalThreadAmt; i++) {
+			// max - min / total, add this times i
+			double increaseAmountStuff = (maxStuffAmt - minStuffAmt) / totalThreadAmt;
+			double minStuffThreadAmt = minStuffAmt + (increaseAmountStuff * i);
+			double maxStuffThreadAmt = minStuffThreadAmt + increaseAmountStuff;
+
+			threadArr[i] = new BruteForceThread(i, calculatedSheet, observedSheet, minStuffThreadAmt, minMovementAmt,
+					minControlAmt, minStuffAmtRight, minMovementAmtRight, minControlAmtRight, maxStuffThreadAmt,
+					maxMovementAmt, maxControlAmt, maxStuffAmtRight, maxMovementAmtRight, maxControlAmtRight,
+					stuffStepAmt, movementStepAmt, controlStepAmt, stuffStepAmtRight, movementStepAmtRight,
+					controlStepAmtRight);
+			threadArr[i].start();
+		}
+
+		long totalIterations = getTotalIterations();
+
+		long divideAmount = Math.max((totalIterations / 1000), 1);
 		int varianceAmount = Integer.MAX_VALUE;
-		double stuffAmount = 0, movementAmount = 0, controlAmount = 0, stuffAmountRight = 0, movementAmountRight = 0, controlAmountRight = 0;
-		Player[] playerArr = new Player[0];
-		// Run the calculations and place all the data into a double array
-		// We then use the saved data to brute force every possible combination to get
-		// our closest fit
 		int iterations = 0;
-		for (double currStuffAmt = minStuffAmt; currStuffAmt <= maxStuffAmt; currStuffAmt += stuffStepAmt) {
-			for (double currMovementAmt = minMovementAmt; currMovementAmt <= maxMovementAmt; currMovementAmt += movementStepAmt) {
-				for (double currControlAmt = minControlAmt; currControlAmt <= maxControlAmt; currControlAmt += controlStepAmt) {
-					for (double currStuffAmtRight = minStuffAmtRight; currStuffAmtRight <= maxStuffAmtRight; currStuffAmtRight += stuffStepAmtRight) {
-						for (double currMovementAmtRight = minMovementAmtRight; currMovementAmtRight <= maxMovementAmtRight; currMovementAmtRight += movementStepAmtRight) {
-							for (double currControlAmtRight = minControlAmtRight; currControlAmtRight <= maxControlAmtRight; currControlAmtRight += controlStepAmtRight) {
-
-								Player[] sortedArr = new Player[calculatedSheet.getPlayerArr().length];
-
-								for (int i = 0; i < calculatedSheet.getPlayerArr().length; i++) {
-									Player oldPlayer = calculatedSheet.getPlayerArr()[i];
-
-									if (oldPlayer == null) {
-										System.out.println("null player in position " + i);
-									}
-
-									Player newPlayer = new Player();
-									newPlayer.stuff = oldPlayer.stuff;
-									newPlayer.movement = oldPlayer.movement;
-									newPlayer.control = oldPlayer.control;
-									newPlayer.stuffMultiplier = currStuffAmt;
-									newPlayer.movementMultiplier = currMovementAmt;
-									newPlayer.controlMultiplier = currControlAmt;
-									newPlayer.stuffRight = oldPlayer.stuffRight;
-									newPlayer.movementRight = oldPlayer.movementRight;
-									newPlayer.controlRight = oldPlayer.controlRight;
-									newPlayer.stuffMultiplierRight = currStuffAmtRight;
-									newPlayer.movementMultiplierRight = currMovementAmtRight;
-									newPlayer.controlMultiplierRight = currControlAmtRight;
-									
-									newPlayer.name = oldPlayer.name;
-									sortedArr[i] = newPlayer;
-								}
-
-								Arrays.sort(sortedArr, new PlayerSort(currStuffAmt, currMovementAmt, currControlAmt, currStuffAmtRight, currMovementAmtRight, currControlAmtRight));
-
-								int currVarianceAmt = runCalculations(sortedArr);
-								
-
-								// sortedPlayerDoubleArr[iterations] = sortedArr;
-								long divideAmount = (totalIterations / 1000);
-								if (divideAmount == 0) {
-									divideAmount++;
-								}
-
-								if (iterations % divideAmount == 0 || currVarianceAmt < varianceAmount ) {
-									System.out.println("Iteration " + iterations + " Variance " + currVarianceAmt + " Stuff VL:" + df.format(currStuffAmt) + " Movement VL:"
-											+ df.format(currMovementAmt) + " Control VL:" + df.format(currControlAmt) + " Stuff VR:" + df.format(currStuffAmtRight) + " Movement VR:"
-													+ df.format(currMovementAmtRight) + " Control VR:" + df.format(currControlAmtRight));
-								}
-								
-								if (currVarianceAmt < varianceAmount) {
-									varianceAmount = currVarianceAmt;
-									playerArr = sortedArr;
-								}
-
-								iterations++;
-							}
-						}
-					}
-				}
+		while (threadsAreRunning()) {
+			iterations = getIterations();
+			if (iterations % divideAmount == 0 || iterations == totalIterations) {
+				System.out.println("Iteration " + iterations + "/" + totalIterations + " ["
+						+ df.format(((double) iterations / (double) totalIterations) * 100) + "%] "
+						+ "Current Lowest Variance " + getLowestVariance());
 			}
 		}
 
-		stuffAmount = playerArr[0].stuffMultiplier;
-		movementAmount = playerArr[0].movementMultiplier;
-		controlAmount = playerArr[0].controlMultiplier;
-		stuffAmountRight = playerArr[0].stuffMultiplierRight;
-		movementAmountRight = playerArr[0].movementMultiplierRight;
-		controlAmountRight = playerArr[0].controlMultiplierRight;
+		Player[] bestPlayerArr = getBestPlayerArr();
+		printArr(getBestPlayerArr());
 
-		
-		printArr(playerArr);
-		System.out.println(varianceAmount + " total variance, lowest had stuff = " + df.format(stuffAmount)
-				+ " movement = " + df.format(movementAmount) + " control = " + df.format(controlAmount)+ " stuff right = " + df.format(stuffAmountRight)
-				+ " movement right = " + df.format(movementAmountRight) + " control right = " + df.format(controlAmountRight));
+		double stuffAmount = bestPlayerArr[0].stuffMultiplier;
+		double movementAmount = bestPlayerArr[0].movementMultiplier;
+		double controlAmount = bestPlayerArr[0].controlMultiplier;
+		double stuffAmountRight = bestPlayerArr[0].stuffMultiplierRight;
+		double movementAmountRight = bestPlayerArr[0].movementMultiplierRight;
+		double controlAmountRight = bestPlayerArr[0].controlMultiplierRight;
+
+		System.out.println(getLowestVariance() + " total variance, lowest had stuff = " + stuffAmount
+				+ " movement = " + movementAmount + " control = " + df.format(controlAmount)
+				+ " stuff right = " + df.format(stuffAmountRight) + " movement right = "
+				+ df.format(movementAmountRight) + " control right = " + df.format(controlAmountRight));
 	}
 
-	public void runDoubleArrCalculations() {
-		System.out.println("\n\n" + sortedPlayerDoubleArr.length + " Arrays with " + sortedPlayerDoubleArr[0].length
-				+ " players per array");
-		int maxPointsOverall = Integer.MAX_VALUE;
-		double stuffAmount = 0, movementAmount = 0, controlAmount = 0, stuffAmountRight = 0, movementAmountRight = 0, controlAmountRight = 0;
-		Player[] finalPlayerArr = null;
-		for (Player[] playerArr : sortedPlayerDoubleArr) {
-			if (playerArr != null) {
-				int totalPointsForArr = 0;
-				for (int i = 0; i < playerArr.length; i++) {
-					if (playerArr[i] != null) {
-
-						String nameObserved = observedSheet.getNameArr()[i];
-						String nameCalculated = playerArr[i].name;
-						if (!nameCalculated.equals(nameObserved) && nameCalculated != null && nameObserved != null) {
-							int posOfObservedName = 0;
-
-							for (int j = 0; j < observedSheet.getNameArr().length; j++) {
-								if (nameCalculated.equals(observedSheet.getNameArr()[j])) {
-									posOfObservedName = j;
-								}
-
-							}
-							if (posOfObservedName == 0) {
-								// System.err.println("Error! Name not found in the list! " + nameCalculated);
-							} else {
-								totalPointsForArr += Math.abs(i - posOfObservedName);// i = the pos of the calculated
-																						// name
-
-							}
-
-						}
-					}
-				}
-
-				if (totalPointsForArr < maxPointsOverall && playerArr != null && playerArr[0] != null) {
-					maxPointsOverall = totalPointsForArr;
-					finalPlayerArr = playerArr;
-					stuffAmount = playerArr[0].stuffMultiplier;
-					movementAmount = playerArr[0].movementMultiplier;
-					controlAmount = playerArr[0].controlMultiplier;
-
-				}
-
+	private synchronized Player[] getBestPlayerArr() {
+		Player[] bestPlayerArr = null;
+		int lowestVariance = Integer.MAX_VALUE;
+		for (int i = 0; i < totalThreadAmt; i++) {
+			if (threadArr[i].getLowestVariance() < lowestVariance) {
+				bestPlayerArr = threadArr[i].getPlayerArr();
 			}
-
 		}
-		printArr(finalPlayerArr);
-		System.out.println(maxPointsOverall + " total variance, highest had stuff = " + stuffAmount + " movement = "
-				+ movementAmount + " control = " + controlAmount);
-
+		return bestPlayerArr;
 	}
 
-	public int runCalculations(Player[] playerArr) {
-		int totalPointsForArr = -1;
+	private long getTotalIterations() {
+		long totalIterations = 0;
+		totalIterations = threadArr[0].totalIterations * totalThreadAmt;
+		return totalIterations;
+	}
+
+	public int getIterations() {
+		int totalIterations = 0;
+		for (int i = 0; i < totalThreadAmt; i++) {
+			totalIterations += threadArr[i].getIterations();
+		}
+		return totalIterations;
+	}
+
+	public int getLowestVariance() {
+		int lowestVariance = Integer.MAX_VALUE;
+		;
+		for (int i = 0; i < totalThreadAmt; i++) {
+			lowestVariance = Math.min(lowestVariance, threadArr[i].getLowestVariance());
+		}
+		return lowestVariance;
+	}
+
+	public synchronized boolean threadsAreRunning() {
+		boolean anyThreadRunning = false;
+		for (int i = 0; i < totalThreadAmt; i++) {
+			if (threadArr[i].isRunning) {
+				anyThreadRunning = true;
+			}
+		}
+		return anyThreadRunning;
+	}
+
+	public int sortPlayerArr(Player[] playerArr) {
+		int totalPointsForArr = 0;
 		if (playerArr != null) {
 			for (int i = 0; i < playerArr.length; i++) {
 				if (playerArr[i] != null) {
@@ -324,27 +320,16 @@ public class OOTPBruteForce {
 		return totalPointsForArr;
 	}
 
-	public void printDoubleArr() {
-		for (Player[] playerArr : sortedPlayerDoubleArr) {
-			if (playerArr != null) {
-				for (Player player : playerArr) {
-					System.out.println(player.name + ", " + df.format(player.stuff) + ", " + df.format(player.movement)
-							+ ", " + df.format(player.control));
-
-				}
-			}
-			System.out.println("\n\n\n\n");
-		}
-
-	}
-
 	public void printArr(Player[] playerArr) {
 		System.out.println("\n\nName ------- Weighted Value");
 
 		for (Player player : playerArr) {
-			System.out.println(player.name + " ------- " + df.format(((player.stuffMultiplier * player.stuff)
-					+ (player.movementMultiplier * player.movement) + (player.controlMultiplier * player.control) + (player.stuffMultiplierRight * player.stuffRight)
-					+ (player.movementMultiplierRight * player.movementRight) + (player.controlMultiplierRight * player.controlRight))));
+			System.out.println(player.name + " ------- "
+					+ df.format(((player.stuffMultiplier * player.stuff) + (player.movementMultiplier * player.movement)
+							+ (player.controlMultiplier * player.control)
+							+ (player.stuffMultiplierRight * player.stuffRight)
+							+ (player.movementMultiplierRight * player.movementRight)
+							+ (player.controlMultiplierRight * player.controlRight))));
 		}
 
 		System.out.println("\n\n");
@@ -353,6 +338,7 @@ public class OOTPBruteForce {
 
 	public static void main(String[] args) {
 
+		// Start main method
 		OOTPBruteForce start = new OOTPBruteForce();
 
 	}
