@@ -6,10 +6,9 @@ import java.util.Scanner;
 
 public class OOTPBruteForce {
 
-	private int numberOfRecursions = 0;
+	private int numberOfRecursions;
 	private int totalThreadAmt = 1;
-	private int maxNumberOfRecursions;
-
+	private final int stepMultiplier = 3;
 	private double minStuffAmt, minMovementAmt, minControlAmt, minStuffAmtRight, minMovementAmtRight,
 			minControlAmtRight; // The lower bound
 	private double maxStuffAmt, maxMovementAmt, maxControlAmt, maxStuffAmtRight, maxMovementAmtRight,
@@ -21,12 +20,12 @@ public class OOTPBruteForce {
 
 	private ObservedSheet observedSheet;
 	private CalculatedSheet calculatedSheet;
-	private static final DecimalFormat df = new DecimalFormat(".#####");
+	private static final DecimalFormat df = new DecimalFormat("#.##");
 	private ArrayList<Integer> calculatedPositions;
 	private ArrayList<Integer> observedRemovePositions;
 
 	public OOTPBruteForce() {
-
+System.out.println(Double.MAX_VALUE);
 		System.out.println("Welcome to the OOTP Brute Force Calculator!");
 		System.out.println("Credit to Matthew Hendrickson (Programmer) and Benjamin Mayhew (Statistics)");
 		System.out.println("Scanning files...\n");
@@ -53,6 +52,40 @@ public class OOTPBruteForce {
 
 		createAndExecuteThreads();
 
+	}
+	
+	public OOTPBruteForce(int numberOfRecursions, double minStuffAmt, double minMovementAmt, double minControlAmt, double minStuffAmtRight, double minMovementAmtRight,
+			double minControlAmtRight, double maxStuffAmt, double maxMovementAmt, double maxControlAmt, double maxStuffAmtRight, double maxMovementAmtRight,
+			double maxControlAmtRight, double stuffStepAmt, double movementStepAmt, double controlStepAmt, double stuffStepAmtRight, double movementStepAmtRight,
+			double controlStepAmtRight) {
+		
+		this.numberOfRecursions = numberOfRecursions;
+		this.minStuffAmt = minStuffAmt;
+		this.minMovementAmt = minMovementAmt;
+		this.minControlAmt = minControlAmt;
+		this.minStuffAmtRight = minStuffAmtRight;
+		this.minMovementAmtRight = minMovementAmtRight;
+		this.minControlAmtRight = minControlAmtRight;
+		
+		this.maxStuffAmt = maxStuffAmt;
+		this.maxMovementAmt = maxMovementAmt;
+		this.maxControlAmt = maxControlAmt;
+		this.maxStuffAmtRight = maxStuffAmtRight;
+		this.maxMovementAmtRight = maxMovementAmtRight;
+		this.maxControlAmtRight = maxControlAmtRight;
+		
+		this.stuffStepAmt = stuffStepAmt;
+		this.movementStepAmt = movementStepAmt;
+		this.controlStepAmt = controlStepAmt;
+		this.stuffStepAmtRight = stuffStepAmtRight;
+		this.movementStepAmtRight = movementStepAmtRight;
+		this.controlStepAmtRight = controlStepAmtRight;
+		
+		loadFiles();
+		crossReference();
+		calculatedSheet.pruneData(calculatedPositions);
+		observedSheet.pruneData(observedRemovePositions);
+		createAndExecuteThreads();
 	}
 
 	public void loadFiles() {
@@ -152,25 +185,25 @@ public class OOTPBruteForce {
 
 		} else if (firstEnterValue == 2) {
 
-			maxNumberOfRecursions = 3;
+			numberOfRecursions = 3;
 			totalThreadAmt = 12;
 
-			minStuffAmt = 1;
+			minStuffAmt = 0;
 			maxStuffAmt = 10;
 
-			minMovementAmt = 1;
+			minMovementAmt = 0;
 			maxMovementAmt = 10;
 
-			minControlAmt = 1;
+			minControlAmt = 0;
 			maxControlAmt = 10;
 
-			minStuffAmtRight = 1;
+			minStuffAmtRight = 0;
 			maxStuffAmtRight = 10;
 
-			minMovementAmtRight = 1;
+			minMovementAmtRight = 0;
 			maxMovementAmtRight = 10;
 
-			minControlAmtRight = 1;
+			minControlAmtRight = 0;
 			maxControlAmtRight = 10;
 
 			stuffStepAmt = 1;
@@ -217,7 +250,7 @@ public class OOTPBruteForce {
 
 		long divideAmount = Math.max((totalIterations / 1000), 1);
 		int varianceAmount = Integer.MAX_VALUE;
-		int iterations = 0;
+		long iterations = 0;
 		while (threadsAreRunning()) {
 			iterations = getIterations();
 			if (iterations % divideAmount == 0 || iterations == totalIterations) {
@@ -237,20 +270,52 @@ public class OOTPBruteForce {
 		double movementAmountRight = bestPlayerArr[0].movementMultiplierRight;
 		double controlAmountRight = bestPlayerArr[0].controlMultiplierRight;
 
-		System.out.println(getLowestVariance() + " total variance, lowest had stuff = " + stuffAmount
-				+ " movement = " + movementAmount + " control = " + df.format(controlAmount)
+		System.out.println(getLowestVariance() + " total matches, lowest had stuff = " + df.format(stuffAmount)
+				+ " movement = " + df.format(movementAmount) + " control = " + df.format(controlAmount)
 				+ " stuff right = " + df.format(stuffAmountRight) + " movement right = "
 				+ df.format(movementAmountRight) + " control right = " + df.format(controlAmountRight));
+		
+		if(numberOfRecursions > 0) {
+			numberOfRecursions--;
+			
+			minStuffAmt = stuffAmount - stuffStepAmt * stepMultiplier;
+			minMovementAmt = movementAmount - movementStepAmt * stepMultiplier;
+			minControlAmt = controlAmount - controlStepAmt * stepMultiplier; 
+			minStuffAmtRight = stuffAmountRight - stuffStepAmt * stepMultiplier;
+			minMovementAmtRight = movementAmountRight - movementStepAmt * stepMultiplier;
+			minControlAmtRight = controlAmountRight - controlStepAmt * stepMultiplier; 
+			
+			maxStuffAmt = stuffAmount + stuffStepAmt * stepMultiplier;
+			maxMovementAmt = movementAmount + movementStepAmt * stepMultiplier;
+			maxControlAmt = controlAmount + controlStepAmt * stepMultiplier; 
+			maxStuffAmt = stuffAmount + stuffStepAmt * stepMultiplier;
+			maxMovementAmt = movementAmount + movementStepAmt * stepMultiplier;
+			maxControlAmt = controlAmount + controlStepAmt * stepMultiplier; 
+			
+			stuffStepAmt = stuffStepAmt/10;
+			movementStepAmt = movementStepAmt/10;
+			controlStepAmt = controlStepAmt/10;
+			stuffStepAmtRight = stuffStepAmtRight/10;
+			movementStepAmtRight = movementStepAmtRight/10;
+			controlStepAmtRight = controlStepAmtRight/10;
+			
+			new OOTPBruteForce(numberOfRecursions, minStuffAmt, minMovementAmt, minControlAmt, minStuffAmtRight, minMovementAmtRight,
+					minControlAmtRight, maxStuffAmt, maxMovementAmt, maxControlAmt, maxStuffAmtRight, maxMovementAmtRight,
+					maxControlAmtRight, stuffStepAmt, movementStepAmt, controlStepAmt, stuffStepAmtRight, movementStepAmtRight,
+					controlStepAmtRight);
+		}
 	}
 
 	private synchronized Player[] getBestPlayerArr() {
 		Player[] bestPlayerArr = null;
-		int lowestVariance = Integer.MAX_VALUE;
+		int lowestVariance = 0;
 		for (int i = 0; i < totalThreadAmt; i++) {
-			if (threadArr[i].getLowestVariance() < lowestVariance) {
+			if (threadArr[i].getLowestVariance() > lowestVariance) {
 				bestPlayerArr = threadArr[i].getPlayerArr();
+				lowestVariance = threadArr[i].getLowestVariance();
 			}
 		}
+		System.out.println(lowestVariance);
 		return bestPlayerArr;
 	}
 
@@ -269,10 +334,9 @@ public class OOTPBruteForce {
 	}
 
 	public int getLowestVariance() {
-		int lowestVariance = Integer.MAX_VALUE;
-		;
+		int lowestVariance = -1;
 		for (int i = 0; i < totalThreadAmt; i++) {
-			lowestVariance = Math.min(lowestVariance, threadArr[i].getLowestVariance());
+			lowestVariance = Math.max(lowestVariance, threadArr[i].getLowestVariance());
 		}
 		return lowestVariance;
 	}
@@ -296,23 +360,14 @@ public class OOTPBruteForce {
 					String nameObserved = observedSheet.getNameArr()[i];
 					String nameCalculated = playerArr[i].name;
 					if (!nameCalculated.equals(nameObserved) && nameCalculated != null && nameObserved != null) {
-						int posOfObservedName = 0;
+						int calculatedPoints = 0;
 
 						for (int j = 0; j < observedSheet.getNameArr().length; j++) {
 							if (nameCalculated.equals(observedSheet.getNameArr()[j])) {
-								posOfObservedName = j;
+								//calculatedPoints = Math.max(4-j, 1);
+								totalPointsForArr += calculatedPoints;
 							}
-
 						}
-						if (posOfObservedName == 0) {
-							// System.err.println("Error! Name not found in the list! " + nameCalculated);
-						} else {
-							if (totalPointsForArr == -1) {
-								totalPointsForArr++;
-							}
-							totalPointsForArr += Math.abs(i - posOfObservedName);// i = the pos of the calculated name
-						}
-
 					}
 				}
 			}
@@ -322,16 +377,18 @@ public class OOTPBruteForce {
 
 	public void printArr(Player[] playerArr) {
 		System.out.println("\n\nName ------- Weighted Value");
-
-		for (Player player : playerArr) {
-			System.out.println(player.name + " ------- "
-					+ df.format(((player.stuffMultiplier * player.stuff) + (player.movementMultiplier * player.movement)
-							+ (player.controlMultiplier * player.control)
-							+ (player.stuffMultiplierRight * player.stuffRight)
-							+ (player.movementMultiplierRight * player.movementRight)
-							+ (player.controlMultiplierRight * player.controlRight))));
+		int amountMatched = 0;
+		for(int i = 0; i < playerArr.length; i++) {
+			
+			if(playerArr[i].name.equals(observedSheet.nameArr[i])) {
+				System.out.println(playerArr[i].name + " --- Match --- " + observedSheet.nameArr[i]);
+				amountMatched++;
+			}else {
+				System.out.println(playerArr[i].name + " ------ " + observedSheet.nameArr[i]);
+			}
+			
 		}
-
+		System.out.println(amountMatched);
 		System.out.println("\n\n");
 
 	}
