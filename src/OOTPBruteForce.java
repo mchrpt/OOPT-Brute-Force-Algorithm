@@ -6,9 +6,9 @@ import java.util.Scanner;
 
 public class OOTPBruteForce {
 
-	private int numberOfRecursions;
-	private int totalThreadAmt = 1;
-	private final int stepMultiplier = 3;
+	private int numberOfRecursions = 0;
+	private int totalThreadAmt = 12;
+	private final int stepMultiplier = 1;
 	private double minStuffAmt, minMovementAmt, minControlAmt, minStuffAmtRight, minMovementAmtRight,
 			minControlAmtRight; // The lower bound
 	private double maxStuffAmt, maxMovementAmt, maxControlAmt, maxStuffAmtRight, maxMovementAmtRight,
@@ -25,7 +25,6 @@ public class OOTPBruteForce {
 	private ArrayList<Integer> observedRemovePositions;
 
 	public OOTPBruteForce() {
-System.out.println(Double.MAX_VALUE);
 		System.out.println("Welcome to the OOTP Brute Force Calculator!");
 		System.out.println("Credit to Matthew Hendrickson (Programmer) and Benjamin Mayhew (Statistics)");
 		System.out.println("Scanning files...\n");
@@ -81,10 +80,21 @@ System.out.println(Double.MAX_VALUE);
 		this.movementStepAmtRight = movementStepAmtRight;
 		this.controlStepAmtRight = controlStepAmtRight;
 		
+		System.out.println("Scanning files...\n");
+
 		loadFiles();
 		crossReference();
+
 		calculatedSheet.pruneData(calculatedPositions);
 		observedSheet.pruneData(observedRemovePositions);
+		
+		System.out.println("Ratings compiled and loaded successfully!\n");
+
+		System.out.println("\n\n\nRunning brute force, please wait...");
+		System.out.println(minStuffAmt+ " " + minMovementAmt+ " " + minControlAmt+ " " + minStuffAmtRight+ " " + minMovementAmtRight+ " " +
+			minControlAmtRight);
+		System.out.println(maxStuffAmt+ " " + maxMovementAmt+ " " + maxControlAmt+ " " + maxStuffAmtRight+ " " + maxMovementAmtRight+ " " +
+				maxControlAmtRight);
 		createAndExecuteThreads();
 	}
 
@@ -141,6 +151,9 @@ System.out.println(Double.MAX_VALUE);
 			System.out.println("\nEnter the number of threads (must be at least 4)");
 			totalThreadAmt = keyboard.nextInt();
 
+			System.out.println("\nEnter the number of recursions (must be at least 1)");
+			numberOfRecursions = keyboard.nextInt();
+			
 			System.out.println("\nEnter the lower, upper, and step amount for Stuff VL");
 			minStuffAmt = keyboard.nextDouble();
 			maxStuffAmt = keyboard.nextDouble();
@@ -278,26 +291,29 @@ System.out.println(Double.MAX_VALUE);
 		if(numberOfRecursions > 0) {
 			numberOfRecursions--;
 			
-			minStuffAmt = stuffAmount - stuffStepAmt * stepMultiplier;
-			minMovementAmt = movementAmount - movementStepAmt * stepMultiplier;
-			minControlAmt = controlAmount - controlStepAmt * stepMultiplier; 
-			minStuffAmtRight = stuffAmountRight - stuffStepAmt * stepMultiplier;
-			minMovementAmtRight = movementAmountRight - movementStepAmt * stepMultiplier;
-			minControlAmtRight = controlAmountRight - controlStepAmt * stepMultiplier; 
 			
-			maxStuffAmt = stuffAmount + stuffStepAmt * stepMultiplier;
-			maxMovementAmt = movementAmount + movementStepAmt * stepMultiplier;
-			maxControlAmt = controlAmount + controlStepAmt * stepMultiplier; 
-			maxStuffAmt = stuffAmount + stuffStepAmt * stepMultiplier;
-			maxMovementAmt = movementAmount + movementStepAmt * stepMultiplier;
-			maxControlAmt = controlAmount + controlStepAmt * stepMultiplier; 
 			
+			minStuffAmt = Math.max(stuffAmount - (stuffStepAmt * stepMultiplier), 0);
+			minMovementAmt = Math.max(movementAmount - (movementStepAmt * stepMultiplier), 0);
+			minControlAmt = Math.max(controlAmount - (controlStepAmt * stepMultiplier), 0 ); 
+			minStuffAmtRight = Math.max(stuffAmountRight - (stuffStepAmtRight * stepMultiplier), 0 );
+			minMovementAmtRight = Math.max(movementAmountRight - (movementStepAmtRight * stepMultiplier), 0);
+			minControlAmtRight = Math.max(controlAmountRight - (controlStepAmtRight * stepMultiplier), 0 ); 
+			
+			maxStuffAmt = stuffAmount + (stuffStepAmt * stepMultiplier);
+			maxMovementAmt = movementAmount + (movementStepAmt * stepMultiplier);
+			maxControlAmt = controlAmount + (controlStepAmt * stepMultiplier); 
+			maxStuffAmtRight = stuffAmountRight + (stuffStepAmtRight * stepMultiplier);
+			maxMovementAmtRight = movementAmountRight + (movementStepAmtRight * stepMultiplier);
+			maxControlAmtRight = controlAmountRight + (controlStepAmtRight * stepMultiplier); 
+
 			stuffStepAmt = stuffStepAmt/10;
 			movementStepAmt = movementStepAmt/10;
 			controlStepAmt = controlStepAmt/10;
 			stuffStepAmtRight = stuffStepAmtRight/10;
 			movementStepAmtRight = movementStepAmtRight/10;
 			controlStepAmtRight = controlStepAmtRight/10;
+			
 			
 			new OOTPBruteForce(numberOfRecursions, minStuffAmt, minMovementAmt, minControlAmt, minStuffAmtRight, minMovementAmtRight,
 					minControlAmtRight, maxStuffAmt, maxMovementAmt, maxControlAmt, maxStuffAmtRight, maxMovementAmtRight,
