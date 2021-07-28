@@ -151,7 +151,7 @@ public class OOTPBruteForce {
 			System.out.println("\nEnter the number of threads (must be at least 4)");
 			totalThreadAmt = keyboard.nextInt();
 
-			System.out.println("\nEnter the number of recursions (must be at least 1)");
+			System.out.println("\nEnter the number of recursions");
 			numberOfRecursions = keyboard.nextInt();
 			
 			System.out.println("\nEnter the lower, upper, and step amount for Stuff VL");
