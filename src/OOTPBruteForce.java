@@ -198,25 +198,25 @@ public class OOTPBruteForce {
 
 		} else if (firstEnterValue == 2) {
 
-			numberOfRecursions = 3;
+			numberOfRecursions = 1;
 			totalThreadAmt = 12;
 
-			minStuffAmt = 0;
+			minStuffAmt = 1;
 			maxStuffAmt = 10;
 
-			minMovementAmt = 0;
+			minMovementAmt = 1;
 			maxMovementAmt = 10;
 
-			minControlAmt = 0;
+			minControlAmt = 1;
 			maxControlAmt = 10;
 
-			minStuffAmtRight = 0;
+			minStuffAmtRight = 1;
 			maxStuffAmtRight = 10;
 
-			minMovementAmtRight = 0;
+			minMovementAmtRight = 1;
 			maxMovementAmtRight = 10;
 
-			minControlAmtRight = 0;
+			minControlAmtRight = 1;
 			maxControlAmtRight = 10;
 
 			stuffStepAmt = 1;
@@ -324,7 +324,7 @@ public class OOTPBruteForce {
 
 	private synchronized Player[] getBestPlayerArr() {
 		Player[] bestPlayerArr = null;
-		int lowestVariance = 0;
+		double lowestVariance = 0;
 		for (int i = 0; i < totalThreadAmt; i++) {
 			if (threadArr[i].getLowestVariance() > lowestVariance) {
 				bestPlayerArr = threadArr[i].getPlayerArr();
@@ -349,8 +349,8 @@ public class OOTPBruteForce {
 		return totalIterations;
 	}
 
-	public int getLowestVariance() {
-		int lowestVariance = -1;
+	public double getLowestVariance() {
+		double lowestVariance = -1;
 		for (int i = 0; i < totalThreadAmt; i++) {
 			lowestVariance = Math.max(lowestVariance, threadArr[i].getLowestVariance());
 		}

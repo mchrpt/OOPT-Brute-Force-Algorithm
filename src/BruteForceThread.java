@@ -20,7 +20,7 @@ public class BruteForceThread extends Thread {
 
 	private Player[] playerArr;
 
-	private int varianceAmount = 0;
+	private double varianceAmount = 0;
 	private long iterations = 0;
 
 	private CalculatedSheet calculatedSheet;
@@ -131,14 +131,21 @@ public class BruteForceThread extends Thread {
 										currStuffAmtRight, currMovementAmtRight, currControlAmtRight));
 
 								// Run calculations to discover the current variance
-								int currVarianceAmt = sortPlayerArr(sortedArr);
+								double currVarianceAmt = sortPlayerArr(sortedArr);
 
 								// If the current variance is lower than the last lowest variance, replace it
 								if (currVarianceAmt > varianceAmount) {
 									//equivilantVarianceList = new ArrayList();
 									varianceAmount = currVarianceAmt;
 									playerArr = sortedArr;
-								} else if (currVarianceAmt == varianceAmount) {
+								} else if (currVarianceAmt == varianceAmount && currVarianceAmt > 0) {
+									
+									double deltaCurrentArr = Math.abs((playerArr[0].stuffMultiplier + playerArr[0].movementMultiplier + playerArr[0].controlMultiplier) - (playerArr[0].stuffMultiplierRight + playerArr[0].movementMultiplierRight + playerArr[0].controlMultiplierRight));
+									double deltaSortedArr =  Math.abs((sortedArr[0].stuffMultiplier + sortedArr[0].movementMultiplier + sortedArr[0].controlMultiplier) - (sortedArr[0].stuffMultiplierRight + sortedArr[0].movementMultiplierRight + sortedArr[0].controlMultiplierRight));
+									if(deltaCurrentArr > deltaSortedArr) {
+										playerArr = sortedArr;
+									}
+									
 									//equivilantVarianceList.add(playerArr);
 								}
 
@@ -158,7 +165,7 @@ public class BruteForceThread extends Thread {
 		return iterations;
 	}
 
-	public int getLowestVariance() {
+	public double getLowestVariance() {
 		return varianceAmount;
 	}
 
@@ -170,17 +177,46 @@ public class BruteForceThread extends Thread {
 		return equivilantVarianceList;
 	}
 
-	public int sortPlayerArr(Player[] playerArr) {
+	public double sortPlayerArr(Player[] playerArr) {
 		int totalPointsForArr = 0;
+		double multiplier = 1;
+		int range1 = playerArr.length / 3;
+		int range2 = range1 * 2;
 		if (playerArr != null) {
 			for (int i = 0; i < playerArr.length; i++) {
 				if (playerArr[i] != null) {
-
+					
+					if(i == 0) {
+						multiplier = 100;
+					}else if(i == playerArr.length) {
+						multiplier = 50;
+					}else {
+						multiplier = 1;
+					}
+					
+					
 					String nameObserved = observedSheet.getNameArr()[i];
 					String nameCalculated = playerArr[i].name;
 					if (nameCalculated.equals(nameObserved)) {
-							totalPointsForArr += 1;	
+						
+						totalPointsForArr += 10 * multiplier;	
 							
+					}else{
+						int posOfObservedName = -1;
+						  
+						for (int j = 0; j < observedSheet.getNameArr().length; j++) { 
+							
+							
+							if(nameCalculated.equals(observedSheet.getNameArr()[j])) { 
+								posOfObservedName = j; 
+							}
+						
+						}
+						if(posOfObservedName > 0) {
+							
+							totalPointsForArr += (Math.max(0,(5-posOfObservedName)));
+						}
+						
 					}
 				}
 			}
